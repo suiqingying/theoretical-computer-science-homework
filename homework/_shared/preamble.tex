@@ -1,0 +1,146 @@
+% Shared LaTeX preamble for homework/*/main.tex
+
+% --- Base layout ---
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=2cm, right=2cm]{geometry}
+\usepackage{fontspec}
+\usepackage{xeCJK} % CJK fallback to avoid missing glyphs in Latin fonts
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage[svgnames]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{automata, positioning, arrows.meta, bending, backgrounds}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+
+% --- Languages & fonts ---
+\usepackage[english]{babel}
+\babelprovide[import, main]{chinese}
+
+\babelfont{rm}[UprightFont=*, BoldFont=* Bold, ItalicFont=* Italic, Scale=1.05]{Linux Libertine O}
+\babelfont{sf}[UprightFont=*, BoldFont=* Bold, Scale=1.05]{Linux Biolinum O}
+\babelfont[chinese]{rm}[
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    ItalicFont=*-Regular,
+    BoldItalicFont=*-Bold
+]{Noto Serif CJK SC}
+\babelfont[chinese]{sf}[
+    UprightFont=*-Regular,
+    BoldFont=*-Bold
+]{Noto Sans CJK SC}
+\babelfont{tt}{Noto Sans Mono}
+\babelfont[chinese]{tt}{Noto Sans Mono CJK SC}
+
+% xeCJK font setup (kept consistent with babelfont)
+\setCJKmainfont{Noto Serif CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
+
+% --- Colors ---
+\definecolor{primaryColor}{RGB}{46, 52, 64}
+\definecolor{accentColor}{RGB}{94, 129, 172}
+\definecolor{boxFill}{RGB}{236, 240, 241}
+\definecolor{solLine}{RGB}{163, 190, 140}
+\definecolor{expandColor}{RGB}{191, 97, 106}
+
+% --- TikZ styles (DFA / NFA / PDA) ---
+\tikzset{
+    dfa_state/.style={
+        state,
+        thick,
+        draw=accentColor,
+        fill=boxFill,
+        text=primaryColor,
+        minimum size=1.1cm
+    },
+    dfa_edge/.style={
+        ->,
+        >=stealth,
+        thick,
+        draw=primaryColor,
+        auto
+    },
+    pda_node/.style={
+        state,
+        thick,
+        draw=accentColor,
+        fill=boxFill,
+        text=primaryColor,
+        minimum size=1.2cm
+    },
+    pda_edge/.style={
+        ->,
+        >=stealth,
+        thick,
+        draw=primaryColor,
+        auto
+    },
+    rule_expand/.style={
+        pda_edge,
+        draw=expandColor,
+        text=expandColor
+    },
+    rule_match/.style={
+        pda_edge,
+        draw=solLine,
+        text=solLine!80!black
+    }
+}
+
+% --- Header / footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\color{accentColor}\textbf{形式语言与自动机作业}}
+\rhead{\color{primaryColor}\textbf{\HomeworkHeader}}
+\cfoot{\small 第 \thepage \ 页，共 \pageref{LastPage} 页}
+\setlength{\headheight}{24pt}
+\addtolength{\topmargin}{-12pt}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{accentColor}\leaders\hrule height \headrulewidth\hfill}}
+
+% --- Problem box ---
+\newtcolorbox[auto counter]{problem}[1][]{
+    enhanced,
+    breakable,
+    colback=boxFill,
+    colframe=accentColor,
+    coltitle=white,
+    fonttitle=\bfseries\large,
+    title={题目 ~\thetcbcounter \quad #1},
+    boxrule=0.5mm,
+    arc=3mm,
+    drop shadow=black!15!white,
+    attach boxed title to top left={xshift=0.5cm, yshift*=-3mm},
+    boxed title style={colback=accentColor}
+}
+
+% --- Solution environment ---
+\newenvironment{solution}{
+    \par\vspace{10pt}
+    \noindent\textbf{\color{solLine} \Large \textit{Solution.}} \par
+    \begingroup\color{primaryColor}\sloppy
+    \leftskip1em \rightskip1em
+    \noindent\rule{\textwidth}{0.4pt}
+    \par\vspace{5pt}
+}{
+    \par\vspace{10pt}
+    \noindent\rule[0.5ex]{\textwidth}{0.1pt}
+    \endgroup
+    \vspace{1.2cm}
+}
+
+% --- Title ---
+\newcommand{\makeCustomTitle}[1]{
+    \begin{center}
+        \vspace*{1cm}
+        {\Huge \bfseries \color{primaryColor} 作业 #1}\\
+        \vspace{0.5cm}
+        {\Large \color{accentColor} \today}
+        \vspace{1.2cm}
+    \end{center}
+}

@@ -1,0 +1,157 @@
+\documentclass[11pt, a4paper]{article}
+\newcommand{\HomeworkHeader}{L02\_01-L02\_03}
+\input{../_shared/preamble.tex}
+
+\begin{document}
+
+\makeCustomTitle{L2.1 - L2.3：正则文法与语法范畴}
+
+% --- Problem 1 ---
+\begin{problem}
+构造一个 DFA 接受如下文法定义的语言：
+\[
+S \to abA,\qquad
+A \to baB,\qquad
+B \to aA \mid bb.
+\]
+\end{problem}
+
+\begin{solution}
+该右线性文法生成的串必以 $S\Rightarrow abA\Rightarrow abbaB$ 开头，
+在 $B$ 处要么选择 $bb$ 结束，要么选择 $aA$ 并再次经过 $A\Rightarrow baB$ 回到 $B$。
+因此语言可写为：
+\[
+L = \texttt{abba}(\texttt{aba})^*\texttt{bb}.
+\]
+
+据此构造 DFA（含陷阱态 $\bot$）。令状态表示“已匹配到的固定前缀/循环位置”：
+\[
+q_0 \xrightarrow{a} q_1 \xrightarrow{b} q_2 \xrightarrow{b} q_3 \xrightarrow{a} q_4
+\]
+其中 $q_4$ 表示已经读到 \texttt{abba} 且当前位于循环入口（对应非终结符 $B$ 的位置）。
+循环块 \texttt{aba} 由 $q_4 \xrightarrow{a} q_5 \xrightarrow{b} q_6 \xrightarrow{a} q_4$ 实现；
+终止块 \texttt{bb} 由 $q_4 \xrightarrow{b} q_7 \xrightarrow{b} q_8$ 实现，其中 $q_8$ 为唯一接受态。
+所有未定义的转移均进入陷阱态 $\bot$（并在 $\bot$ 上自环）。
+
+完整转移（字母表 $\{a,b\}$）：
+\[
+\begin{array}{c|cc}
+ & a & b\\\hline
+q_0 & q_1 & \bot\\
+q_1 & \bot & q_2\\
+q_2 & \bot & q_3\\
+q_3 & q_4 & \bot\\
+q_4 & q_5 & q_7\\
+q_5 & \bot & q_6\\
+q_6 & q_4 & \bot\\
+q_7 & \bot & q_8\\
+q_8 & \bot & \bot\\
+\bot & \bot & \bot\\
+\end{array}
+\]
+该 DFA 恰好接受 $\texttt{abba}(\texttt{aba})^*\texttt{bb}$。
+\end{solution}
+
+% --- Problem 2 ---
+\begin{problem}
+构造产生语言 $L(aa^*(ab+a)^*)$ 的正则文法。
+\end{problem}
+
+\begin{solution}
+正则表达式 $aa^*(ab+a)^*$ 等价于 $a^+(ab\mid a)^*$（至少一个 $a$，之后由若干个 \texttt{a} 或 \texttt{ab} 拼接）。
+给出一个右线性文法（正则文法）：
+\[
+\boxed{
+\begin{aligned}
+S &\to aS \mid aR,\\
+R &\to aR \mid aB \mid \epsilon,\\
+B &\to bR.
+\end{aligned}}
+\]
+其中 $S$ 保证至少产生一个 $a$；在 $R$ 中可以选择产生 \texttt{a}（用 $R\to aR$）或产生 \texttt{ab}（用 $R\to aB\to abR$），并可用 $R\to\epsilon$ 结束。
+\end{solution}
+
+% --- Problem 3 ---
+\begin{problem}
+构造产生语言 $L((aab^*ab)^*)$ 的右线性文法。
+\end{problem}
+
+\begin{solution}
+一个块为 $\texttt{aa} \,\texttt{b}^*\, \texttt{ab}$，整体是其 Kleene 星，可产生空串。
+给出右线性文法：
+\[
+\boxed{
+\begin{aligned}
+S &\to \epsilon \mid aA,\\
+A &\to aB,\\
+B &\to bB \mid aC,\\
+C &\to bS.
+\end{aligned}}
+\]
+推导：$S\Rightarrow aA\Rightarrow aaB\Rightarrow aab^*aC\Rightarrow aab^*abS$，回到 $S$ 继续重复或用 $\epsilon$ 结束。
+\end{solution}
+
+% --- Problem 4 ---
+\begin{problem}
+设文法 $G$ 的产生式如下，给出 $G$ 的每个语法范畴（非终结符）代表的集合：
+\[
+\begin{aligned}
+S&\to aSa \mid aaSaa \mid aAa\\
+A&\to bA \mid bbbA \mid bB\\
+B&\to cB \mid cC\\
+C&\to ccC \mid DD\\
+D&\to dD \mid d
+\end{aligned}
+\]
+\end{problem}
+
+\begin{solution}
+\textbf{(1) $D$：}
+\[
+D\to dD\mid d \quad\Rightarrow\quad L(D)=\{d^n\mid n\ge 1\}.
+\]
+
+\textbf{(2) $C$：}
+\[
+C\to ccC\mid DD.
+\]
+其中 $DD$ 连接两个 $d^+$，因此 $L(DD)=\{d^n\mid n\ge 2\}$。再在前面重复添加 \texttt{cc}，得
+\[
+L(C)=\{(cc)^k d^n \mid k\ge 0,\ n\ge 2\}=\{c^{2k}d^n\mid k\ge 0,\ n\ge 2\}.
+\]
+
+\textbf{(3) $B$：}
+\[
+B\to cB\mid cC \quad\Rightarrow\quad L(B)=\{c^m x\mid m\ge 1,\ x\in L(C)\}.
+\]
+因此
+\[
+L(B)=\{c^t d^n\mid t\ge 1,\ n\ge 2\}.
+\]
+
+\textbf{(4) $A$：}
+\[
+A\to bA\mid bbbA\mid bB \quad\Rightarrow\quad A\Rightarrow (b\mid bbb)^*\,bB.
+\]
+即先产生至少一个 \texttt{b}，再进入 $B$，于是
+\[
+L(A)=\{b^m c^t d^n \mid m\ge 1,\ t\ge 1,\ n\ge 2\}.
+\]
+
+\textbf{(5) $S$：}
+\[
+S\to aSa\mid aaSaa\mid aAa
+\]
+表示在两端对称包裹 1 个或 2 个 \texttt{a}，最终落到 $aAa$。因此
+\[
+L(S)=\{a^k\,x\,a^k \mid k\ge 1,\ x\in L(A)\}.
+\]
+代入 $L(A)$ 得
+\[
+\boxed{
+L(S)=\{a^k b^m c^t d^n a^k \mid k\ge 1,\ m\ge 1,\ t\ge 1,\ n\ge 2\}.}
+\]
+\end{solution}
+
+\end{document}
+

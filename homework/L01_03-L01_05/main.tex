@@ -1,0 +1,141 @@
+\documentclass[11pt, a4paper]{article}
+\newcommand{\HomeworkHeader}{L01\_03-L01\_05}
+\input{../_shared/preamble.tex}
+
+\begin{document}
+
+\makeCustomTitle{L1.3 - L1.5：NFA/DFA 转换与 $\epsilon$-消除}
+
+% --- Problem 1 ---
+\begin{problem}
+将如下 NFA 转换成等价的 DFA：
+\begin{enumerate}[label=(\alph*)]
+  \item 字母表 $\Sigma=\{0,1\}$，状态 $q_1$ 为初态，$q_3$ 为终态。转移如图所示：$q_1$ 上有 $0,1$ 自环，且 $q_1\xrightarrow{1}q_2$，$q_2\xrightarrow{0,1}q_3$。
+  \item 字母表 $\Sigma=\{a,b,c\}$，初态 $A$，终态 $B$。转移如图所示：$A\xrightarrow{\epsilon,c}B$，$A\xrightarrow{a,c}C$，$C\xrightarrow{\epsilon,b}A$，$C\xrightarrow{b}B$，$C\xrightarrow{c}C$。
+\end{enumerate}
+\end{problem}
+
+\begin{solution}
+\textbf{(a) 子集构造法}
+
+NFA 的转移：
+\[
+\delta(q_1,0)=\{q_1\},\quad \delta(q_1,1)=\{q_1,q_2\},\quad
+\delta(q_2,0)=\{q_3\},\quad \delta(q_2,1)=\{q_3\},\quad
+\delta(q_3,0)=\delta(q_3,1)=\emptyset.
+\]
+构造 DFA 的状态为 NFA 状态集合：
+\[
+S_0=\{q_1\}\ (\text{初态}),\quad
+S_1=\{q_1,q_2\},\quad
+S_2=\{q_1,q_3\},\quad
+S_3=\{q_1,q_2,q_3\}.
+\]
+接受态为包含 $q_3$ 的集合：$S_2,S_3$。
+
+转移表：
+\[
+\begin{array}{c|cc}
+\text{DFA 状态} & 0 & 1\\\hline
+S_0=\{q_1\} & S_0 & S_1\\
+S_1=\{q_1,q_2\} & S_2 & S_3\\
+S_2=\{q_1,q_3\} & S_0 & S_1\\
+S_3=\{q_1,q_2,q_3\} & S_2 & S_3\\
+\end{array}
+\]
+
+\textbf{(b) 含 $\epsilon$ 的子集构造法}
+
+先计算 $\epsilon$-闭包：
+\[
+\epsilon\text{-cl}(A)=\{A,B\},\quad \epsilon\text{-cl}(B)=\{B\},\quad
+\epsilon\text{-cl}(C)=\{A,B,C\}\ (\text{因 }C\xrightarrow{\epsilon}A,\ A\xrightarrow{\epsilon}B).
+\]
+DFA 初态为 $\epsilon\text{-cl}(\{A\})=\{A,B\}$，并且凡是包含 $B$ 的集合都是接受态（因为可通过 $\epsilon$ 到达终态）。
+
+可达的 DFA 状态只有三个：
+\[
+T_0=\{A,B\}\ (\text{初态，接受}),\quad
+T_1=\{A,B,C\}\ (\text{接受}),\quad
+T_\emptyset=\emptyset\ (\text{陷阱态，非接受}).
+\]
+逐字母计算转移（$\delta_D(X,x)=\epsilon\text{-cl}(\text{move}(X,x))$），得到：
+\[
+\begin{array}{c|ccc}
+\text{DFA 状态} & a & b & c\\\hline
+T_0=\{A,B\} & T_1 & T_\emptyset & T_1\\
+T_1=\{A,B,C\} & T_1 & T_0 & T_1\\
+T_\emptyset=\emptyset & T_\emptyset & T_\emptyset & T_\emptyset\\
+\end{array}
+\]
+\end{solution}
+
+% --- Problem 2 ---
+\begin{problem}
+$\Sigma=\{a,b\}$，设计识别“以 \texttt{abb} 结尾”的 NFA，并将其转换成等价 DFA。
+\end{problem}
+
+\begin{solution}
+\textbf{NFA 设计（允许回退重新匹配）}
+
+取状态集合 $\{s_0,s_1,s_2,s_3\}$，其中 $s_0$ 为初态，$s_3$ 为终态。转移定义为：
+\[
+\begin{aligned}
+\delta(s_0,a)&=\{s_0,s_1\}, & \delta(s_0,b)&=\{s_0\},\\
+\delta(s_1,b)&=\{s_2\}, & \delta(s_1,a)&=\emptyset,\\
+\delta(s_2,b)&=\{s_3\}, & \delta(s_2,a)&=\emptyset,\\
+\delta(s_3,a)&=\emptyset, & \delta(s_3,b)&=\emptyset.
+\end{aligned}
+\]
+直观上：$s_1,s_2,s_3$ 分别表示“刚看到后缀的 \texttt{a}、\texttt{ab}、\texttt{abb}”。
+
+\textbf{等价 DFA（最短后缀法 / 子集构造的最小结果）}
+
+用 4 个状态表示“当前已匹配的最长后缀是 \texttt{abb} 的前缀”的长度：
+\[
+q_0:\epsilon,\quad q_1:\texttt{a},\quad q_2:\texttt{ab},\quad q_3:\texttt{abb}(\text{接受}).
+\]
+转移表：
+\[
+\begin{array}{c|cc}
+ & a & b\\\hline
+q_0 & q_1 & q_0\\
+q_1 & q_1 & q_2\\
+q_2 & q_1 & q_3\\
+q_3 & q_1 & q_0\\
+\end{array}
+\]
+终态只有 $q_3$，它恰好对应“读入串以 \texttt{abb} 结尾”。
+\end{solution}
+
+% --- Problem 3 ---
+\begin{problem}
+将题 1(b) 的 $\epsilon$-NFA 转换成等价的\textbf{不含 $\epsilon$-移动}的 NFA。
+\end{problem}
+
+\begin{solution}
+对每个状态 $p$，令 $\epsilon$-闭包为 $\epsilon\text{-cl}(p)$。消 $\epsilon$ 的标准做法是：
+\[
+\delta'(p,x)=\epsilon\text{-cl}\Big(\bigcup_{r\in \epsilon\text{-cl}(p)}\delta(r,x)\Big),\qquad
+F'=\{p\mid \epsilon\text{-cl}(p)\cap F\ne\emptyset\}.
+\]
+本题中 $F=\{B\}$，且
+\[
+\epsilon\text{-cl}(A)=\{A,B\},\quad \epsilon\text{-cl}(B)=\{B\},\quad \epsilon\text{-cl}(C)=\{A,B,C\},
+\]
+因此新终态为 $F'=\{A,B,C\}$（初态 $A$ 也成为终态，对应原自动机可通过 $\epsilon$ 直接到达 $B$）。
+
+计算 $\delta'$：
+\[
+\begin{array}{c|ccc}
+\delta' & a & b & c\\\hline
+A & \{A,B,C\} & \emptyset & \{A,B,C\}\\
+B & \emptyset & \emptyset & \emptyset\\
+C & \{A,B,C\} & \{A,B\} & \{A,B,C\}\\
+\end{array}
+\]
+该 NFA 不含 $\epsilon$-边，且与原 $\epsilon$-NFA 等价。
+\end{solution}
+
+\end{document}
+
